@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     public Rigidbody2D rb;
+    bool isFacingLeft = true;
     [Header("Movement")]
     public float moveSpeed = 5f;
     float horizontalMovement;
@@ -19,6 +20,11 @@ public class PlayerMovement : MonoBehaviour
     public Transform groundCheckPos;
     public Vector2 groundCheckSize = new Vector2(0.5f, 0.05f);
     public LayerMask groundLayer;
+
+    [Header("WallCheck")]
+    public Transform wallCheckPos;
+    public Vector2 wallCheckSize = new Vector2(0.05f, 0.5f);
+    public LayerMask wallLayer;
 
     [Header("Gravity")]
     public float baseGravity = 2f;
@@ -36,10 +42,11 @@ public class PlayerMovement : MonoBehaviour
     {
         rb.velocity = new Vector2(horizontalMovement * moveSpeed, rb.velocity.y);
         GroundCheck();
-        Gravity();
+        ProcessGravity();
+        Flip();
     }
 
-    private void Gravity() {
+    private void ProcessGravity() {
         if(rb.velocity.y < 0) {
             rb.gravityScale = baseGravity * fallSpeedMultiplier; //fall with acceleration
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
@@ -70,8 +77,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void Flip() {
+        if(isFacingLeft && horizontalMovement > 0 || !isFacingLeft && horizontalMovement < 0) {
+            isFacingLeft = !isFacingLeft;
+            Vector3 ls = transform.localScale;
+            ls.x *= -1f;
+            transform.localScale = ls;
+        }
+    }
+
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.white;
         Gizmos.DrawWireCube(groundCheckPos.position, groundCheckSize);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
     }
 }
