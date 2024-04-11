@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     public Rigidbody2D rb;
+    public Animator animator;
     bool isFacingRight = true;
     [Header("Movement")]
     public float moveSpeed = 5f;
@@ -60,6 +61,10 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(horizontalMovement * moveSpeed, rb.velocity.y);
             Flip();
         }
+
+        animator.SetFloat("yVelocity", rb.velocity.y);
+        animator.SetFloat("magnitude", rb.velocity.magnitude);
+        animator.SetBool("isWallSliding", isWallSliding);
     }
 
   
@@ -72,10 +77,12 @@ public class PlayerMovement : MonoBehaviour
                 //hold down = full power
                 rb.velocity = new Vector2(rb.velocity.x, jumpPower);
                 jumpsRemaining--;
+                animator.SetTrigger("jump");
             } else if (context.canceled && rb.velocity.y > 0) {
                 //light tap  = half power
                 rb.velocity = new Vector2(rb.velocity.x, 0.5f * rb.velocity.y);
                 jumpsRemaining--;
+                animator.SetTrigger("jump");
             }
         }
 
@@ -85,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
             Debug.Log(rb.velocity);//jump away from wall
             wallJumpTimer = 0;
+            animator.SetTrigger("jump");
             //Force flip
             if(transform.localScale.x != wallJumpDirection) {
                 isFacingRight = !isFacingRight;
