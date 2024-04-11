@@ -8,6 +8,8 @@ public class PlayerMovement : MonoBehaviour
     public Rigidbody2D rb;
     public Animator animator;
     bool isFacingRight = true;
+    public ParticleSystem smokeFX;
+
     [Header("Movement")]
     public float moveSpeed = 5f;
     float horizontalMovement;
@@ -77,12 +79,12 @@ public class PlayerMovement : MonoBehaviour
                 //hold down = full power
                 rb.velocity = new Vector2(rb.velocity.x, jumpPower);
                 jumpsRemaining--;
-                animator.SetTrigger("jump");
+                JumpFX();
             } else if (context.canceled && rb.velocity.y > 0) {
                 //light tap  = half power
                 rb.velocity = new Vector2(rb.velocity.x, 0.5f * rb.velocity.y);
                 jumpsRemaining--;
-                animator.SetTrigger("jump");
+                JumpFX();
             }
         }
 
@@ -92,9 +94,9 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
             Debug.Log(rb.velocity);//jump away from wall
             wallJumpTimer = 0;
-            animator.SetTrigger("jump");
+            JumpFX();
             //Force flip
-            if(transform.localScale.x != wallJumpDirection) {
+            if (transform.localScale.x != wallJumpDirection) {
                 isFacingRight = !isFacingRight;
                 Vector3 ls = transform.localScale;
                 ls.x *= -1f;
@@ -106,9 +108,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void JumpFX() {
+        animator.SetTrigger("jump");
+        smokeFX.Play();
+    }
     private void GroundCheck() {
         if(Physics2D.OverlapBox(groundCheckPos.position, groundCheckSize, 0, groundLayer)) {
-            Debug.Log("Onground");
             jumpsRemaining = maxJumps;
             isGrounded = true;
         } else {
@@ -159,6 +164,10 @@ public class PlayerMovement : MonoBehaviour
             Vector3 ls = transform.localScale;
             ls.x *= -1f;
             transform.localScale = ls;
+            
+            if(rb.velocity.y == 0) {
+                smokeFX.Play();
+            }
         }
     }
 
